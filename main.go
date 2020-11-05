@@ -25,15 +25,15 @@ Loop:
 		terminal.Put(' ')
 
 		switch b {
-		case "\x1b[A":
+		case terminal.KeyUp:
 			y--
-		case "\x1b[B":
+		case terminal.KeyDown:
 			y++
-		case "\x1b[C":
+		case terminal.KeyRight:
 			x++
-		case "\x1b[D":
+		case terminal.KeyLeft:
 			x--
-		case "\x1b":
+		case terminal.KeyEscape:
 			break Loop
 		}
 
