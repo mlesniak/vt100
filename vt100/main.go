@@ -27,6 +27,13 @@ type Screen struct {
 	data   [][]byte
 	x      int
 	y      int
+
+	ops map[pos]byte
+}
+
+type pos struct {
+	x int
+	y int
 }
 
 func New() *Screen {
@@ -49,6 +56,7 @@ func New() *Screen {
 	// Initialize buffer.
 	buffer := &Screen{}
 	buffer.width, buffer.height = size()
+	buffer.ops = make(map[pos]byte)
 	buffer.data = make([][]byte, buffer.height)
 	for i := 0; i < buffer.height; i++ {
 		buffer.data[i] = make([]byte, buffer.width)
@@ -69,8 +77,11 @@ func (b *Screen) Clear() {
 
 func (b *Screen) Display() {
 	clear()
-	for i := 0; i < b.height; i++ {
-		fmt.Println(string(b.data[i]))
+
+	for pos, val := range b.ops {
+		setCursor(pos.x, pos.y)
+		_put(val)
+		delete(b.ops, pos)
 	}
 }
 
@@ -79,7 +90,7 @@ func (b *Screen) Goto(x, y int) {
 }
 
 func (b *Screen) Put(c byte) {
-	b.data[b.y][b.x] = c
+	b.ops[pos{b.x, b.y}] = c
 }
 
 func (b *Screen) Get() string {
@@ -114,7 +125,7 @@ func GetPosition() (int, int) {
 	return x, y
 }
 
-func put(c byte) {
+func _put(c byte) {
 	fmt.Printf("%c", c)
 }
 

@@ -21,7 +21,6 @@ Loop:
 		screen.Display()
 
 		b := screen.Get()
-
 		screen.Goto(x, y)
 		screen.Put(' ')
 
