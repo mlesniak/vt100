@@ -1,4 +1,4 @@
-package terminal
+package vt100
 
 const (
 	KeyUp     = "\x1b[A"

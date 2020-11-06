@@ -1,45 +1,45 @@
+// TODO(mlesniak) Write to buffer and show only changed values or write everything at once?
+// TODO(mlesniak) Everything else are .
+// TODO(mlesniak) Move continuous updates to go routine
+
 package main
 
 import (
-	"github.com/mlesniak/rogue/terminal"
+	"github.com/mlesniak/rogue/vt100"
 )
 
 func main() {
-	terminal.Initialize()
+	screen := vt100.New()
+	screen.Clear()
 
-	// TODO(mlesniak) Write to buffer and show only changed values or write everything at once?
-	// TODO(mlesniak) Everything else are .
-
-	terminal.Clear()
-	w, h := terminal.Size()
-
+	w, h := screen.Size()
 	x, y := w/2, h/2
 Loop:
 	for {
-		terminal.Goto(x, y)
-		terminal.Put('@')
+		screen.Goto(x, y)
+		screen.Put('@')
+		screen.Display()
 
-		b := terminal.Get()
+		b := screen.Get()
 
-		terminal.Goto(x, y)
-		terminal.Put(' ')
+		screen.Goto(x, y)
+		screen.Put(' ')
 
 		switch b {
-		case terminal.KeyUp:
+		case vt100.KeyUp:
 			y--
-		case terminal.KeyDown:
+		case vt100.KeyDown:
 			y++
-		case terminal.KeyRight:
+		case vt100.KeyRight:
 			x++
-		case terminal.KeyLeft:
+		case vt100.KeyLeft:
 			x--
-		case terminal.KeyEscape:
+		case vt100.KeyEscape:
 			break Loop
 		}
-
 	}
 
-	terminal.Clear()
-	terminal.Goto(0, 0)
-	terminal.Reset()
+	screen.Clear()
+	screen.Goto(0, 0)
+	vt100.Reset()
 }
