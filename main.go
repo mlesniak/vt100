@@ -5,40 +5,40 @@
 package main
 
 import (
-	"github.com/mlesniak/rogue/vt100"
+	"github.com/mlesniak/rogue/canvas"
 )
 
 func main() {
-	screen := vt100.New()
-	screen.Clear()
+	c := canvas.New()
+	c.Clear()
 
-	w, h := screen.Size()
+	w, h := c.Size()
 	x, y := w/2, h/2
 Loop:
 	for {
-		screen.Goto(x, y)
-		screen.Put('@')
-		screen.Display()
+		c.Goto(x, y)
+		c.Put('@')
+		c.Display()
 
-		b := screen.Get()
-		screen.Goto(x, y)
-		screen.Put(' ')
+		b := c.Get()
+		c.Goto(x, y)
+		c.Put(' ')
 
 		switch b {
-		case vt100.KeyUp:
+		case canvas.KeyUp:
 			y--
-		case vt100.KeyDown:
+		case canvas.KeyDown:
 			y++
-		case vt100.KeyRight:
+		case canvas.KeyRight:
 			x++
-		case vt100.KeyLeft:
+		case canvas.KeyLeft:
 			x--
-		case vt100.KeyEscape:
+		case canvas.KeyEscape:
 			break Loop
 		}
 	}
 
-	screen.Clear()
-	screen.Goto(0, 0)
-	vt100.Reset()
+	c.Clear()
+	c.Goto(0, 0)
+	c.Reset()
 }

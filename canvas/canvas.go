@@ -5,20 +5,14 @@
 // buffering and getting Screen size.
 //
 // Based on http://ascii-table.com/ansi-escape-sequences-vt-100.php
-package vt100
+//
+// Design step: abstract canvas operations and use interface in virtual buffer.
+package canvas
 
 import (
-	"fmt"
-	"golang.org/x/sys/unix"
 	"os"
 )
 
-const ioctlReadTermios = unix.TIOCGETA
-const ioctlWriteTermios = unix.TIOCSETA
-
-var fd int
-var termios *unix.Termios
-var inputBuffer = make([]byte, 3)
 var buffer *Screen
 
 type Screen struct {
@@ -37,21 +31,7 @@ type pos struct {
 }
 
 func New() *Screen {
-	fd = int(os.Stdout.Fd())
-	termios, err := unix.IoctlGetTermios(fd, ioctlReadTermios)
-	if err != nil {
-		panic(err)
-	}
-
-	newState := *termios
-	newState.Lflag &^= unix.ECHO   // Disable echo
-	newState.Lflag &^= unix.ICANON // Disable buffering
-	if err := unix.IoctlSetTermios(fd, ioctlWriteTermios, &newState); err != nil {
-		panic(err)
-	}
-
-	// Hide cursor.
-	fmt.Printf("\x1b[?25l")
+	initVT100()
 
 	// Initialize buffer.
 	buffer := &Screen{}
@@ -76,11 +56,9 @@ func (b *Screen) Clear() {
 }
 
 func (b *Screen) Display() {
-	clear()
-
 	for pos, val := range b.ops {
 		setCursor(pos.x, pos.y)
-		_put(val)
+		write(val)
 		delete(b.ops, pos)
 	}
 }
@@ -102,39 +80,6 @@ func (b *Screen) Size() (int, int) {
 	return b.width, b.height
 }
 
-func Reset() {
-	// Show cursor.
-	fmt.Printf("\x1b[?25h")
-	clear()
-	setCursor(0, 0)
-	_ = unix.IoctlSetTermios(fd, ioctlWriteTermios, termios)
-}
-
-func clear() {
-	fmt.Print("\x1b[2J")
-}
-
-func setCursor(x, y int) {
-	fmt.Printf("\x1b[%d;%dH", y, x)
-}
-
-func GetPosition() (int, int) {
-	fmt.Printf("\x1b[6n")
-	x, y := 0, 0
-	_, _ = fmt.Scanf("\x1b[%d;%dR", &x, &y)
-	return x, y
-}
-
-func _put(c byte) {
-	fmt.Printf("%c", c)
-}
-
-func get() string {
-	n, _ := os.Stdin.Read(inputBuffer)
-	return string(inputBuffer[:n])
-}
-
-func size() (int, int) {
-	ws, _ := unix.IoctlGetWinsize(fd, unix.TIOCGWINSZ)
-	return int(ws.Col), int(ws.Row)
+func (b *Screen) Reset() {
+	reset()
 }

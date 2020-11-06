@@ -1,4 +1,4 @@
-package vt100
+package canvas
 
 const (
 	KeyUp     = "\x1b[A"
