@@ -11,6 +11,8 @@ package canvas
 
 import (
 	"os"
+	"sync"
+	"time"
 )
 
 var buffer *Screen
@@ -22,7 +24,8 @@ type Screen struct {
 	x      int
 	y      int
 
-	ops map[pos]byte
+	opsLock sync.Mutex
+	ops     map[pos]byte
 }
 
 type pos struct {
@@ -45,41 +48,61 @@ func New() *Screen {
 	return buffer
 }
 
-func (b *Screen) Clear() {
-	for i := 0; i < b.height; i++ {
-		for j := 0; j < b.width; j++ {
-			b.data[i][j] = ' '
+func (s *Screen) Clear() {
+	for i := 0; i < s.height; i++ {
+		for j := 0; j < s.width; j++ {
+			s.data[i][j] = ' '
 		}
 	}
 
-	b.x, b.y = 0, 0
+	s.x, s.y = 0, 0
 }
 
-func (b *Screen) Display() {
-	for pos, val := range b.ops {
+func (s *Screen) Update() {
+	s.opsLock.Lock()
+	defer s.opsLock.Unlock()
+	for pos, val := range s.ops {
 		setCursor(pos.x, pos.y)
 		write(val)
-		delete(b.ops, pos)
+		delete(s.ops, pos)
 	}
 }
 
-func (b *Screen) Goto(x, y int) {
-	b.x, b.y = x, y
+func (s *Screen) Goto(x, y int) {
+	s.x, s.y = x, y
 }
 
-func (b *Screen) Put(c byte) {
-	b.ops[pos{b.x, b.y}] = c
+func (s *Screen) PutAt(x, y int, c byte) {
+	s.Goto(x, y)
+	s.Put(c)
 }
 
-func (b *Screen) Get() string {
+func (s *Screen) Put(c byte) {
+	s.opsLock.Lock()
+	s.ops[pos{s.x, s.y}] = c
+	s.opsLock.Unlock()
+}
+
+func (s *Screen) Get() string {
 	n, _ := os.Stdin.Read(inputBuffer)
 	return string(inputBuffer[:n])
 }
 
-func (b *Screen) Size() (int, int) {
-	return b.width, b.height
+func (s *Screen) Size() (int, int) {
+	return s.width, s.height
 }
 
-func (b *Screen) Reset() {
+func (s *Screen) Reset() {
 	reset()
+}
+
+func (s *Screen) StartDisplayLoop() {
+	//var fps int64 = 24
+	go func() {
+		for {
+			s.Update()
+			//time.Sleep(time.Duration(time.Second.Milliseconds() / fps) * time.Millisecond
+			time.Sleep(time.Millisecond / 24)
+		}
+	}()
 }

@@ -1,6 +1,4 @@
-// TODO(mlesniak) Write to buffer and show only changed values or write everything at once?
 // TODO(mlesniak) Everything else are .
-// TODO(mlesniak) Move continuous updates to go routine
 
 package main
 
@@ -14,15 +12,15 @@ func main() {
 
 	w, h := c.Size()
 	x, y := w/2, h/2
+
 Loop:
+	// TODO(mlesniak) Add game loop with 1/10s timer, i.e. 100ms per frame.
 	for {
-		c.Goto(x, y)
-		c.Put('@')
-		c.Display()
+		c.PutAt(x, y, '@')
+		c.Update()
 
 		b := c.Get()
-		c.Goto(x, y)
-		c.Put(' ')
+		c.PutAt(x, y, ' ')
 
 		switch b {
 		case canvas.KeyUp:
