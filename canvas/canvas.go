@@ -77,6 +77,12 @@ func (s *Screen) PutAt(x, y int, c byte) {
 	s.Put(c)
 }
 
+func (s *Screen) PrintAt(x, y int, msg string) {
+	for i, v := range msg {
+		s.PutAt(x+i, y, byte(v))
+	}
+}
+
 func (s *Screen) Put(c byte) {
 	s.opsLock.Lock()
 	s.ops[pos{s.x, s.y}] = c
