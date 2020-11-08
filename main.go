@@ -1,5 +1,3 @@
-// TODO(mlesniak) Everything else are .
-
 package main
 
 import (
